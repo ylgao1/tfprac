@@ -1,12 +1,24 @@
 import tensorflow as tf
 
 
-with tf.name_scope('layer1'):
-    v = tf.Variable(1.0, name='w')
+def foo():
+    with tf.variable_scope('abc'):
+        a = tf.get_variable('a', [1], tf.float32, initializer=tf.ones_initializer)
+    return a
 
 
-with tf.variable_scope('layer1', reuse=True):
-    v1 = tf.get_variable('w', shape=[1])
+def foo1():
+    a = foo()
+    b = a + 1
+    return b
+
+
+b = foo1()
+
+with tf.variable_scope('abc', reuse=True):
+    a1 = tf.get_variable('a')
+
 
 sess = tf.InteractiveSession()
+
 tf.global_variables_initializer().run()
