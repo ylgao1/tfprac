@@ -1,5 +1,4 @@
 import tensorflow as tf
-import time
 from tensorflow.examples.tutorials.mnist import input_data
 
 import c5t8 as mn
