@@ -6,7 +6,7 @@ OUTPUT_NODE = 10
 
 LAYER1_NODE = 500
 BATCH_SIZE = 100
-LEARNING_RATE_BASE = 0.01
+LEARNING_RATE_BASE = 0.8
 LEARNING_RATE_DECAY = 0.99
 REGULARIZATION_RATE = 0.0001
 TRAINING_STEPS = 30000
@@ -20,9 +20,9 @@ def inference(input_tensor, avg_class, reuse=False):
         biases = tf.get_variable('biases', [LAYER1_NODE],
                                  initializer=tf.constant_initializer(0))
         if avg_class is None:
-            layer1 = tf.matmul(input_tensor, weights) + biases
+            layer1 = tf.nn.relu(tf.matmul(input_tensor, weights) + biases)
         else:
-            layer1 = tf.matmul(input_tensor, avg_class.average(weights)) + avg_class.average(biases)
+            layer1 = tf.nn.relu(tf.matmul(input_tensor, avg_class.average(weights)) + avg_class.average(biases))
     with tf.variable_scope('layer2', reuse=reuse):
         weights = tf.get_variable('weights', [LAYER1_NODE, OUTPUT_NODE],
                                   initializer=tf.truncated_normal_initializer(stddev=0.1))
