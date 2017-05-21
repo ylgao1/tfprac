@@ -23,3 +23,30 @@ filename = 'temp/c7/c7.tfrec'
 writer = tf.python_io.TFRecordWriter(filename)
 for idx in range(num_examples):
     image_raw = images[idx].tostring()
+    example = tf.train.Example(features=tf.train.Features(feature={
+        'pixels': _int64_feature(pixels),
+        'label': _int64_feature(np.argmax(labels[idx])),
+        'image_raw': _bytes_feature(image_raw)
+    }))
+    writer.write(example.SerializeToString())
+writer.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
