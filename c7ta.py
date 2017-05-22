@@ -2,7 +2,7 @@ import tensorflow as tf
 
 filename = 'temp/c7/c7.tfrec'
 
-fn_q = tf.train.string_input_producer([filename], num_epochs=1)
+fn_q = tf.train.string_input_producer([filename])
 reader = tf.TFRecordReader()
 
 _, sdata = reader.read(fn_q)

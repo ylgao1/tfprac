@@ -1,46 +1,22 @@
-import tensorflow as tf
 import numpy as np
 
-np.random.seed(1337)
+X = [1, 2]
+state = [0.0, 0.0]
 
-# data IO
-data = open('input.txt').read()
-chars = list(set(data))
-data_size, vocab_size = len(data), len(chars)
-print(f'data has {data_size} characters, {vocab_size} unique.')
-char_to_ix = {ch:i for i,ch in enumerate(chars)}
-ix_to_char = {i:ch for i,ch in enumerate(chars)}
+w_cell_state = np.array([[0.1, 0.2], [0.3, 0.4]])
+w_cell_input = np.array([0.5, 0.6])
+b_cell = np.array([0.1, -0.1])
 
-
-# hyperparameters
-hidden_size = 100
-seq_length = 25
-learning_rate = 1e-1
+w_output = np.array([[1.0], [2.0]])
+b_output = 0.1
 
 
+for i in range(len(X)):
+    before_act = np.dot(state, w_cell_state) + X[i] * w_cell_input + b_cell
+    state = np.tanh(before_act)
+    final_output = np.dot(state, w_output) + b_output
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    print(f'before activation: {before_act}')
+    print(f'state: {state}')
+    print(f'output: {final_output}')
 
