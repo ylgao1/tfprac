@@ -28,10 +28,11 @@ class PTBModel:
         self.input_data = tf.placeholder(tf.int32, [batch_size, num_steps])
         self.targets = tf.placeholder(tf.int32, [batch_size, num_steps])
 
-        lstm_cell = tf.contrib.rnn.BasicLSTMCell(HIDDEN_SIZE)
+        func_lstm_cell = lambda: tf.contrib.rnn.LSTMCell(HIDDEN_SIZE)
         if is_training:
-            lstm_cell = tf.contrib.rnn.DropoutWrapper(lstm_cell, output_keep_prob = KEEP_PROB)
-        cell = tf.contrib.rnn.MultiRNNCell([lstm_cell] * NUM_LAYERS)
+            func_lstm_cell = lambda: tf.contrib.rnn.DropoutWrapper(tf.contrib.rnn.LSTMCell(HIDDEN_SIZE),
+                                                                   output_keep_prob = KEEP_PROB)
+        cell = tf.contrib.rnn.MultiRNNCell([func_lstm_cell() for _ in range(NUM_LAYERS)])
 
         self.initial_state = cell.zero_state(batch_size, tf.float32)
         embedding = tf.get_variable('embedding', [VOCAB_SIZE, HIDDEN_SIZE])
@@ -42,6 +43,7 @@ class PTBModel:
 
         outputs = []
         state = self.initial_state
+
         with tf.variable_scope('RNN'):
             for time_step in range(num_steps):
                 if time_step > 0:
@@ -49,6 +51,9 @@ class PTBModel:
                 cell_output, state = cell(inputs[:, time_step, :], state)
                 outputs.append(cell_output)
         output = tf.reshape(tf.concat(outputs, 1), [-1, HIDDEN_SIZE])
+        # output, _ = tf.nn.dynamic_rnn(cell, inputs, dtype=tf.float32, initial_state=state)
+        # output = tf.reshape(output, [-1, HIDDEN_SIZE])
+
         weight = tf.get_variable('weight', [HIDDEN_SIZE, VOCAB_SIZE])
         bias = tf.get_variable('bias', [VOCAB_SIZE])
         logits = tf.matmul(output, weight) + bias
@@ -82,7 +87,7 @@ def run_epoch(session, model, data, train_op, output_log, epoch_size):
         iters += model.num_steps
 
         if output_log and step % 100 == 0:
-            print(f'After {step} steps, perplexity is {np.exp(total_costs/iters):.3f)}')
+            print(f'After {step} steps, perplexity is {np.exp(total_costs/iters):.3f}')
     return np.exp(total_costs/iters)
 
 
@@ -120,11 +125,11 @@ def main():
         for i in range(NUM_EPOCH):
             print(f'In iteration: {i+1}')
             run_epoch(session, train_model, train_q, train_model.train_op, True, train_epoch_size)
-            valid_perplexity = run_epoch(session, eval_model, eval_q, tf.no_op(), False, valid_epoch_size)
-            print(f'Epoch: {i+1} Validation Perplexity: {valid_perplexity:.3f}')
+            # valid_perplexity = run_epoch(session, eval_model, eval_q, tf.no_op(), False, valid_epoch_size)
+            # print(f'Epoch: {i+1} Validation Perplexity: {valid_perplexity:.3f}')
 
-        test_perplexity = run_epoch(session, eval_model, test_q, tf.no_op(), False, test_epoch_size)
-        print(f'Epoch: {i+1} Test Perplexity: {test_perplexity:.3f}')
+        # test_perplexity = run_epoch(session, eval_model, test_q, tf.no_op(), False, test_epoch_size)
+        # print(f'Epoch: {i+1} Test Perplexity: {test_perplexity:.3f}')
 
         coord.request_stop()
         coord.join(threads)
